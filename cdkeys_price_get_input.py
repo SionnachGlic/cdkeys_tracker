@@ -1,8 +1,7 @@
 #cdkeys_price_get_input
 
-"""Allows user to enter a url of a desired game on cdkeys.com, the maximum price they're willing to pay,
-scrapes the titles from the web, and saves these details in a csv. Scrapes the current price of
-the game, and sends a desktop notification it it's equal to or less than the maximum price."""
+"""Allows user to enter a url of a desired game on cdkeys.com, and tells them the title and
+current price. Then asks them the maximum price they're willing to pay and saves these details in a csv."""
 
 #requests data from web pages
 import requests
