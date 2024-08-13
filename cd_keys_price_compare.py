@@ -1,5 +1,8 @@
 #cdkeys_price_compare
 
+"""Checks the current price of all games on the list against the user's maximum price, sending a desktop notification
+if the current price is cheap enough"""
+
 #to read from/write to csv file
 import pandas as pd
 
