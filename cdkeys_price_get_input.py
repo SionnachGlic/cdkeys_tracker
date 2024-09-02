@@ -76,11 +76,8 @@ class Game:
     def add_game(cls):
         """allows the user to input the game's url and their max price"""
         
-        print("Enter q to quit at any time")
+        print("Enter 'q' to quit at any time and return to the previous menu")
         user_input = ""
-
-        #create infinite loop, not conditional while loop, because it'll try to scrape
-        #from 'q' before ending the loop. instead use break statement
         
         while True:
 
@@ -88,11 +85,12 @@ class Game:
             print("What is the URL of the product you want to track?")
             user_input = input(str())
             
-            #break if user quits
+            #if user quits return to add or remove game menu
             if user_input == 'q':
-                break
+                Game.add_or_remove(Game)
 
             
+            #Scrape the title and price from the given url
             url = user_input
             title = cls.scrape_title(url)
             price_float = cls.scrape_price(url)
@@ -104,12 +102,12 @@ class Game:
             print("What is the maximum price you're willing to pay for this?")
             user_input = input("£")
             
-            if user_input == 'q':
-                break
+            if user_input == 'q': #There must be a neater way of doing this without repeating it?
+                Game.add_or_remove(Game)
             
             max_price = float(user_input)
 
-            #add this one to csv
+            #add this game's details to csv
             game_instance = cls(url, title, price_float, max_price)
             game_instance.save_to_csv()
             print()
@@ -118,11 +116,8 @@ class Game:
     def remove_game(cls, filename = "game_price_list.csv"):
         """Allows the user to enter the url of the game they'd like to remove"""
 
-        print("Enter q to quit at any time")
+        print("Enter 'q' to quit at any time")
         user_input = ""
-
-        #create infinite loop, not conditional while loop, because it'll search
-        #csv for 'q' before ending the loop. instead use break statement
 
         while True:
 
@@ -132,7 +127,7 @@ class Game:
             
             #stop if user quits
             if user_input == 'q':
-                break
+                Game.add_or_remove(Game)
 
             #Initialise rows_to_keep as empty list
             rows_to_keep = []
@@ -176,17 +171,31 @@ class Game:
             
             
 
-    #def add_or_remove(??): #unsure if cls or static because it only calls methods but
-    #those functions are class methods
-        #get user input here about whether do add or remove a game
-        #If remove:
-            #remove_game
-        #If add:
-            #add_game
+    def add_or_remove(cls): 
+
+        """gets user input  about whether do add or remove a game"""
+
+        print("Enter 'a' to add a game, 'r' to remove one, or 'q' to quit the program.")
+        user_input = input(str())
+
+        while True:
+            if user_input == 'a':
+                Game.add_game(Game)
+            
+            elif user_input == 'r':
+                Game.remove_game(Game)
+            
+            elif user_input == 'q':
+                quit()
+            else:
+                 print("You must enter 'a' to add a game, 'r' to remove one, or 'q' to quit.")
+
             
 
 if __name__ == "__main__":
-    #Game.add_or_remove(Game)
+    Game.add_or_remove(Game)
+    
+    
     
     
                                 
