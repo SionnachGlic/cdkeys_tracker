@@ -67,24 +67,49 @@ class Game:
         def price_to_float(price_str):
             """Convert price from string with currency sign to float"""
             
-            #start with empty string
-            price_float = ""
+            #if game is out of stock, price is infinite, so always more than max price
+            if not price_str:
+                 price_float = float('inf')
             
-            #first get string of just the value
-            for char in price_str:
-                if char.isdigit() or char == '.':
-                    price_float += char
-            
-            #convert to float
-            price_float = float(price_float)
-            return price_float
+            else:
+                #start with empty string
+                price_float = ""
+                
+                #first get string of just the value
+                for char in price_str:
+                    if char.isdigit() or char == '.':
+                        price_float += char
+                
+                #convert to float
+                price_float = float(price_float)
+                return price_float
         
         page = requests.get(url)
 
         soup = BS(page.content, 'html.parser')
 
-        #get current price, try/except with no 'offer price' once working
-        price_str = soup.find(class_="final-price").get_text()
+        #Check if available
+        unavailable = soup.find(class_="unavailable")
+        if unavailable:
+            #if unavailable, set price to a high value so it is always more than max price
+            #and can be used to alert user that the game is out of stock
+            #there should be a better way of doing this using inf?
+            price_str = "999999"
+        
+        else:
+
+            try:
+                #try to find price after discounts
+                price_str = soup.find(class_="final-price").get_text()
+            
+            except AttributeError:
+                try:
+                    #get original price if no discounted price found
+                    price_str = soup.find(class_="price").get_text()
+
+                except AttributeError:
+                        print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
+
 
         price_float = price_to_float(price_str)
         return price_float
@@ -112,7 +137,10 @@ class Game:
             price_float = cls.scrape_price(url)
 
             print()
-            print(f"The current price of {title} is £{price_float:.2f}.")
+            if price_float == float(999999):
+                print(f"{title} is currently out of stock.")
+            else:
+                print(f"The current price of {title} is £{price_float:.2f}.")
             
             print()
             print("What is the maximum price you're willing to pay for this?")
