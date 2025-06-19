@@ -46,31 +46,47 @@ class Game:
         
     @staticmethod
     def scrape_title(url):
-        """Gets the title from the web page"""
-    
+        """Get the title from the web page"""
+        
         page = requests.get(url)
 
         soup = BS(page.content, 'html.parser')
 
-        #Get title of page
-        title = soup.find(class_="page-title").get_text()
-        
+        #Get title of product (previously page)
+        title = soup.find(class_="product-title").get_text()
+
+        #strip whitespace from start and end of title
+        title = title.strip()
+            
         return title
 
     @staticmethod
     def scrape_price(url):
-        """Gets the price from the web page"""
-    
+        """Get the price from the web page"""
+
+        def price_to_float(price_str):
+            """Convert price from string with currency sign to float"""
+            
+            #start with empty string
+            price_float = ""
+            
+            #first get string of just the value
+            for char in price_str:
+                if char.isdigit() or char == '.':
+                    price_float += char
+            
+            #convert to float
+            price_float = float(price_float)
+            return price_float
+        
         page = requests.get(url)
 
         soup = BS(page.content, 'html.parser')
-        
-        #get price
-        price_str = soup.find(class_="price").get_text()
-        
-        #convert price from string with currency sign to float
-        price_float = float(price_str[1:])
-        
+
+        #get current price, try/except with no 'offer price' once working
+        price_str = soup.find(class_="final-price").get_text()
+
+        price_float = price_to_float(price_str)
         return price_float
         
     def add_game(cls):
