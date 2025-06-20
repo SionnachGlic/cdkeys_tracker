@@ -47,13 +47,48 @@ class Game:
     @staticmethod
     def scrape_title(url):
         """Get the title from the web page"""
+
+        try:
+            page = requests.get(url, timeout=10)
+
+            soup = BS(page.content, 'html.parser')
+
+            #Get title of product (previously page)
+            title = soup.find(class_="product-title").get_text()
         
-        page = requests.get(url)
+        #a bunch of this is commented out because it doesn't work for some reason
+        #and I don't know why, so I will leave it for now
 
-        soup = BS(page.content, 'html.parser')
+        #except requests.exceptions.ConnectionError as conn_err:
+            #print("Connection error, please check your internet connection or cdkeys.com status.")
+            #print(f"scrape_title ConnectionError: {conn_err}")
+            #go back to add game menu
+            #Game.add_game(Game)
 
-        #Get title of product (previously page)
-        title = soup.find(class_="product-title").get_text()
+        #except requests.exceptions.Timeout as timeout_err:
+            #print("Request timed out, please check your connection and the status of cdkeys.com.")
+            #print(f"scrape_title TimeoutError: {timeout_err}")
+            #go back to add game menu
+            #Game.add_game(Game)
+        
+        except AttributeError:
+            print("scrape_title AttributeError: Please check URL is correct.")
+            print("If problem continues, the web page structure may have changed, please report this issue.")
+            #go back to add game menu
+            Game.add_game(Game)
+        
+        #except requests.exceptions.RequestException as req_err:
+            #print("An error occurred while trying to fetch the page, please check your connection and the status of cdkeys.com")
+            #print(f"scrape_title RequestException: {req_err}")
+            #go back to add game menu
+            #Game.add_game(Game)
+        
+        except Exception as e:
+            print(f"An unexpected error occurred, please check your connection and the status of cdkeys.com")
+            print("If error persists, please report it.")
+            print(f"error: {e}")
+            #go back to add game menu
+            Game.add_game(Game)
 
         #strip whitespace from start and end of title
         title = title.strip()
@@ -84,31 +119,42 @@ class Game:
                 price_float = float(price_float)
                 return price_float
         
-        page = requests.get(url)
+        try:
+            page = requests.get(url)
 
-        soup = BS(page.content, 'html.parser')
+            soup = BS(page.content, 'html.parser')
 
-        #Check if available
-        unavailable = soup.find(class_="unavailable")
-        if unavailable:
-            #if unavailable, set price to a high value so it is always more than max price
-            #and can be used to alert user that the game is out of stock
-            #there should be a better way of doing this using inf?
-            price_str = "999999"
+            #Check if available
+            unavailable = soup.find(class_="unavailable")
+            if unavailable:
+                #if unavailable, set price to a high value so it is always more than max price
+                #and can be used to alert user that the game is out of stock
+                #there should be a better way of doing this using inf?
+                price_str = "999999"
         
-        else:
+            else:
 
-            try:
-                #try to find price after discounts
-                price_str = soup.find(class_="final-price").get_text()
-            
-            except AttributeError:
                 try:
-                    #get original price if no discounted price found
-                    price_str = soup.find(class_="price").get_text()
-
+                    #try to find price after discounts
+                    price_str = soup.find(class_="final-price").get_text()
+                
                 except AttributeError:
-                        print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
+                    try:
+                        #get original price if no discounted price found
+                        price_str = soup.find(class_="price").get_text()
+
+                    except AttributeError:
+                            print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
+            
+        except AttributeError:
+            print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
+        
+        except Exception as e:
+            print(f"An unexpected error occurred, please check your connection and the status of cdkeys.com")
+            print("If error persists, please report it.")
+            print(f"error: {e}")
+            #go back to add game menu
+            Game.add_game(Game) 
 
 
         price_float = price_to_float(price_str)
