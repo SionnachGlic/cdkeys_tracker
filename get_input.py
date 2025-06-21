@@ -126,25 +126,25 @@ class Game:
 
             #Check if available
             unavailable = soup.find(class_="unavailable")
-            if unavailable:
+            #if unavailable:
                 #if unavailable, set price to a high value so it is always more than max price
                 #and can be used to alert user that the game is out of stock
                 #there should be a better way of doing this using inf?
-                price_str = "999999"
+                #price_str = "999999"
         
-            else:
+            #else:
 
+            try:
+                #try to find price after discounts
+                price_str = soup.find(class_="final-price").get_text()
+            
+            except AttributeError:
                 try:
-                    #try to find price after discounts
-                    price_str = soup.find(class_="final-price").get_text()
-                
-                except AttributeError:
-                    try:
-                        #get original price if no discounted price found
-                        price_str = soup.find(class_="price").get_text()
+                    #get original price if no discounted price found
+                    price_str = soup.find(class_="price").get_text()
 
-                    except AttributeError:
-                            print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
+                except AttributeError:
+                        print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
             
         except AttributeError:
             print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
@@ -158,7 +158,7 @@ class Game:
 
 
         price_float = price_to_float(price_str)
-        return price_float
+        return price_float, unavailable
         
     def add_game(cls):
         """allows the user to input the game's url and their max price"""
@@ -180,11 +180,12 @@ class Game:
             #Scrape the title and price from the given url
             url = user_input
             title = cls.scrape_title(url)
-            price_float = cls.scrape_price(url)
+            price_float, unavailable = cls.scrape_price(url)
 
             print()
-            if price_float == float(999999):
-                print(f"{title} is currently out of stock.")
+            if unavailable:
+                print(f"{title} is currently out of stock, but was £{price_float:.2f}.")
+                price_float = 999999.0 #Set price to a high value so it is always more than max price
             else:
                 print(f"The current price of {title} is £{price_float:.2f}.")
             
