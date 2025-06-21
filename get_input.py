@@ -102,22 +102,31 @@ class Game:
         def price_to_float(price_str):
             """Convert price from string with currency sign to float"""
             
-            #if game is out of stock, price is infinite, so always more than max price
-            if not price_str:
-                 price_float = float('inf')
+            #start with empty string
+            price_float = ""
             
-            else:
-                #start with empty string
-                price_float = ""
-                
-                #first get string of just the value
-                for char in price_str:
-                    if char.isdigit() or char == '.':
-                        price_float += char
-                
-                #convert to float
-                price_float = float(price_float)
-                return price_float
+            #first get string of just the value
+            for char in price_str:
+                if char.isdigit() or char == '.':
+                    price_float += char
+            
+            #convert to float
+            price_float = float(price_float)
+            return price_float
+        
+        def is_unavailable(url):
+            try:
+                page = requests.get(url)
+                soup = BS(page.content, 'html.parser')
+
+                div = soup.find(class_='product-info-main')
+                unavailable = div.find('span', id='notify-me')
+                if unavailable:
+                    return True
+                else:
+                    return False
+            except (AttributeError, IndexError):
+                return False
         
         try:
             page = requests.get(url)
@@ -125,14 +134,7 @@ class Game:
             soup = BS(page.content, 'html.parser')
 
             #Check if available
-            unavailable = soup.find(class_="unavailable")
-            #if unavailable:
-                #if unavailable, set price to a high value so it is always more than max price
-                #and can be used to alert user that the game is out of stock
-                #there should be a better way of doing this using inf?
-                #price_str = "999999"
-        
-            #else:
+            unavailable = is_unavailable(url)
 
             try:
                 #try to find price after discounts
