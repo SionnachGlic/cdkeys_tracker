@@ -161,9 +161,66 @@ class Game:
 
         price_float = price_to_float(price_str)
         return price_float, unavailable
+    
+    def remove_game(cls, url, filename = "game_price_list.csv"):
+        """Allows the user to enter the url of the game they'd like to remove"""
+
+        #Initialise rows_to_keep as empty list
+        rows_to_keep = []
+
+        #Initialise removed_game as None
+        removed_game = None
+
+        #read csv to find row that has url
+        with open(filename, mode = 'r', newline = '', encoding = 'utf-8') as file:
+            
+            reader = csv.reader(file)
+            
+            #extracts first row and stores it in variable called header
+            header = next(reader)
+
+            #creates index so removed game is recorded to inform user
+            url_index = header.index('url')
+            title_index = header.index('title')
+            
+            for row in reader:
+                
+                if row[url_index] == url:
+                    removed_game = row #Store removed game
+                    
+                else:
+                    rows_to_keep.append(row) #Add game to list of games that aren't being removed
+
+        #write the rest of the rows back
+        with open(filename, mode = 'w', newline = '', encoding = 'utf-8') as file:
+
+                            writer = csv.writer(file)
+                            #rewrite header row
+                            writer.writerow(header)
+                            #rewrite filtered rows
+                            writer.writerows(rows_to_keep)
+
+        #Create Game instance to use to print confirmation message
+        removed_game_instance = cls(removed_game[url_index], removed_game[title_index])
+
+        print(f"{removed_game_instance.title} has been removed")
         
     def add_game(cls):
         """allows the user to input the game's url and their max price"""
+
+        def test_duplicate(url, filename="game_price_list.csv"):
+            """Check if the game is already in the csv file"""
+            if not os.path.exists(filename):
+                return False, None
+            else:
+                with open(filename, mode='r', newline='', encoding='utf-8') as file:
+                    reader = csv.reader(file)
+                    header = next(reader)
+
+                    for row in reader:
+                        if row[header.index('url')] == url:
+                            max_price = float(row[header.index('max_price')])
+                            return True, max_price
         
         print("Enter 'q' to quit at any time and return to the previous menu")
         user_input = ""
@@ -177,7 +234,7 @@ class Game:
             #if user quits return to add or remove game menu
             if user_input == 'q':
                 Game.add_or_remove(Game)
-
+            
             
             #Scrape the title and price from the given url
             url = user_input
@@ -191,12 +248,31 @@ class Game:
             else:
                 print(f"The current price of {title} is £{price_float:.2f}.")
             
-            print()
-            print("What is the maximum price you're willing to pay for this?")
-            user_input = input("£")
+            is_duplicate, max_price = test_duplicate(url)
+            if is_duplicate:
+                print(f"This game is already in your list with a max price of {max_price:.2f}.")
+                print("Would you like to update the max price for this game? (y/n)")
+                user_input = input(str())
+                if user_input.lower() == 'n':
+                    print("Returning to the previous menu.")
+                    Game.add_or_remove(Game)
+                
+                elif user_input.lower() == 'y':
+                    print("What is the new maximum price you're willing to pay for this?")
+                    user_input = input("£")
+                    if user_input == 'q':
+                        print("Returning to the previous menu.")
+                        Game.add_or_remove(Game)
+                    else:
+                        Game.remove_game(Game, url) #Remove the old game entry
             
-            if user_input == 'q': #There must be a neater way of doing this without repeating it?
-                Game.add_or_remove(Game)
+            else:
+                print()
+                print("What is the maximum price you're willing to pay for this?")
+                user_input = input("£")
+                
+                if user_input == 'q': #There must be a neater way of doing this without repeating it? maybe with a while loop?
+                    Game.add_or_remove(Game)
             
             max_price = float(user_input)
 
@@ -205,63 +281,6 @@ class Game:
             game_instance.save_to_csv()
             print()
             print("Game information saved")
-
-    def remove_game(cls, filename = "game_price_list.csv"):
-        """Allows the user to enter the url of the game they'd like to remove"""
-
-        print("Enter 'q' to quit at any time")
-        user_input = ""
-
-        while True:
-
-            print()
-            print("What is the URL of the product you'd like to remove?")
-            user_input = input(str())
-            
-            #stop if user quits
-            if user_input == 'q':
-                Game.add_or_remove(Game)
-
-            #Initialise rows_to_keep as empty list
-            rows_to_keep = []
-
-            #Initialise removed_game as None
-            removed_game = None
-
-            #read csv to find row that has url
-            with open(filename, mode = 'r', newline = '', encoding = 'utf-8') as file:
-                
-                reader = csv.reader(file)
-                
-                #extracts first row and stores it in variable called header
-                header = next(reader)
-
-                #creates index so removed game is recorded to inform user
-                url_index = header.index('url')
-                title_index = header.index('title')
-                
-                for row in reader:
-                    
-                    if row[url_index] == user_input:
-                        removed_game = row #Store removed game
-                        
-                    else:
-                        rows_to_keep.append(row) #Add game to list of games that aren't being removed
-
-            #write the rest of the rows back
-            with open(filename, mode = 'w', newline = '', encoding = 'utf-8') as file:
-
-                                writer = csv.writer(file)
-                                #rewrite header row
-                                writer.writerow(header)
-                                #rewrite filtered rows
-                                writer.writerows(rows_to_keep)
-
-            #Create Game instance to use to print confirmation message
-            removed_game_instance = cls(removed_game[url_index], removed_game[title_index])
-
-            print(f"{removed_game_instance.title} has been removed")
-            
             
 
     def add_or_remove(cls): 
@@ -276,6 +295,20 @@ class Game:
                 Game.add_game(Game)
             
             elif user_input == 'r':
+                print("Enter 'q' to quit at any time")
+                user_input = ""
+
+                while True:
+
+                    print()
+                    print("What is the URL of the product you'd like to remove?")
+                    user_input = input(str())
+                    url = user_input
+                    
+                    #stop if user quits
+                    if user_input == 'q':
+                        Game.add_or_remove(Game, url)
+
                 Game.remove_game(Game)
             
             elif user_input == 'q':
