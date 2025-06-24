@@ -63,32 +63,34 @@ class Game:
             #print("Connection error, please check your internet connection or cdkeys.com status.")
             #print(f"scrape_title ConnectionError: {conn_err}")
             #go back to add game menu
-            #Game.add_game(Game)
+            #Game.add_game()
 
         #except requests.exceptions.Timeout as timeout_err:
             #print("Request timed out, please check your connection and the status of cdkeys.com.")
             #print(f"scrape_title TimeoutError: {timeout_err}")
             #go back to add game menu
-            #Game.add_game(Game)
+            #Game.add_game()
         
         except AttributeError:
             print("scrape_title AttributeError: Please check URL is correct.")
             print("If problem continues, the web page structure may have changed, please report this issue.")
             #go back to add game menu
-            Game.add_game(Game)
+            #Game.add_game()
+            return None
         
         #except requests.exceptions.RequestException as req_err:
             #print("An error occurred while trying to fetch the page, please check your connection and the status of cdkeys.com")
             #print(f"scrape_title RequestException: {req_err}")
             #go back to add game menu
-            #Game.add_game(Game)
+            #Game.add_game()
         
         except Exception as e:
             print(f"An unexpected error occurred, please check your connection and the status of cdkeys.com")
             print("If error persists, please report it.")
             print(f"error: {e}")
             #go back to add game menu
-            Game.add_game(Game)
+            #Game.add_game()
+            return None
 
         #strip whitespace from start and end of title
         title = title.strip()
@@ -147,23 +149,28 @@ class Game:
 
                 except AttributeError:
                         print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
+                        return None, None
             
         except AttributeError:
             print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
+            return None, None
         
         except Exception as e:
             print(f"An unexpected error occurred, please check your connection and the status of cdkeys.com")
             print("If error persists, please report it.")
             print(f"error: {e}")
             #go back to add game menu
-            Game.add_game(Game) 
+            #Game.add_game() 
+            return None, None
 
 
         price_float = price_to_float(price_str)
         return price_float, unavailable
     
+    @classmethod
     def remove_game(cls, url, filename = "game_price_list.csv"):
         """Allows the user to enter the url of the game they'd like to remove"""
+        #NOT WORKING
 
         #Initialise rows_to_keep as empty list
         rows_to_keep = []
@@ -185,26 +192,37 @@ class Game:
             
             for row in reader:
                 
+                game_exists = False #flag to check game is on csv
+
                 if row[url_index] == url:
                     removed_game = row #Store removed game
+                    game_exists = True #Set flag to true if game is found
                     
                 else:
                     rows_to_keep.append(row) #Add game to list of games that aren't being removed
-
-        #write the rest of the rows back
-        with open(filename, mode = 'w', newline = '', encoding = 'utf-8') as file:
-
-                            writer = csv.writer(file)
-                            #rewrite header row
-                            writer.writerow(header)
-                            #rewrite filtered rows
-                            writer.writerows(rows_to_keep)
-
-        #Create Game instance to use to print confirmation message
-        removed_game_instance = cls(removed_game[url_index], removed_game[title_index])
-
-        print(f"{removed_game_instance.title} has been removed")
         
+        if game_exists == False:
+            if user_input != 'q':
+                print("Game not found in your list, please check the URL and try again.")
+            return
+        
+        else:
+
+            #write the rest of the rows back
+            with open(filename, mode = 'w', newline = '', encoding = 'utf-8') as file:
+
+                                writer = csv.writer(file)
+                                #rewrite header row
+                                writer.writerow(header)
+                                #rewrite filtered rows
+                                writer.writerows(rows_to_keep)
+
+            #Create Game instance to use to print confirmation message
+            removed_game_instance = cls(removed_game[url_index], removed_game[title_index])
+
+            print(f"{removed_game_instance.title} has been removed")
+
+    @classmethod    
     def add_game(cls):
         """allows the user to input the game's url and their max price"""
 
@@ -221,6 +239,7 @@ class Game:
                         if row[header.index('url')] == url:
                             max_price = float(row[header.index('max_price')])
                             return True, max_price
+            return False, None
         
         print("Enter 'q' to quit at any time and return to the previous menu")
         user_input = ""
@@ -233,7 +252,7 @@ class Game:
             
             #if user quits return to add or remove game menu
             if user_input == 'q':
-                Game.add_or_remove(Game)
+                Game.add_or_remove()
             
             
             #Scrape the title and price from the given url
@@ -255,16 +274,16 @@ class Game:
                 user_input = input(str())
                 if user_input.lower() == 'n':
                     print("Returning to the previous menu.")
-                    Game.add_or_remove(Game)
+                    Game.add_or_remove()
                 
                 elif user_input.lower() == 'y':
                     print("What is the new maximum price you're willing to pay for this?")
                     user_input = input("£")
                     if user_input == 'q':
                         print("Returning to the previous menu.")
-                        Game.add_or_remove(Game)
+                        Game.add_or_remove()
                     else:
-                        Game.remove_game(Game, url) #Remove the old game entry
+                        Game.remove_game(url) #Remove the old game entry
             
             else:
                 print()
@@ -272,7 +291,7 @@ class Game:
                 user_input = input("£")
                 
                 if user_input == 'q': #There must be a neater way of doing this without repeating it? maybe with a while loop?
-                    Game.add_or_remove(Game)
+                    Game.add_or_remove()
             
             max_price = float(user_input)
 
@@ -282,7 +301,7 @@ class Game:
             print()
             print("Game information saved")
             
-
+    @classmethod
     def add_or_remove(cls): 
 
         """gets user input  about whether do add or remove a game"""
@@ -292,7 +311,7 @@ class Game:
 
         while True:
             if user_input == 'a':
-                Game.add_game(Game)
+                Game.add_game()
             
             elif user_input == 'r':
                 print("Enter 'q' to quit at any time")
@@ -304,12 +323,11 @@ class Game:
                     print("What is the URL of the product you'd like to remove?")
                     user_input = input(str())
                     url = user_input
+                    Game.remove_game(url)
                     
                     #stop if user quits
                     if user_input == 'q':
-                        Game.add_or_remove(Game, url)
-
-                Game.remove_game(Game)
+                        Game.add_or_remove()
             
             elif user_input == 'q':
                 quit()
@@ -319,7 +337,7 @@ class Game:
             
 
 if __name__ == "__main__":
-    Game.add_or_remove(Game)
+    Game.add_or_remove()
     
     
     
