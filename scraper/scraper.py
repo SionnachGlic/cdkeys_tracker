@@ -8,17 +8,24 @@ from bs4 import BeautifulSoup as BS
 def scrape_title(url):
     """Get the title from the web page"""
 
-    try:
-        page = requests.get(url, timeout=10)
+    #try/except commented out til I sort how to display errors that work for cli and gui
+    page = requests.get(url, timeout=10)
 
-        soup = BS(page.content, 'html.parser')
+    soup = BS(page.content, 'html.parser')
+
+    #Get title of product (previously page)
+    title = soup.find(class_="product-title").get_text()
+
+    #try:
+        #page = requests.get(url, timeout=10)
+
+        #soup = BS(page.content, 'html.parser')
 
         #Get title of product (previously page)
-        title = soup.find(class_="product-title").get_text()
+        #title = soup.find(class_="product-title").get_text()
     
     #a bunch of this is commented out because it doesn't work for some reason
     #and I don't know why, so I will leave it for now
-
     #except requests.exceptions.ConnectionError as conn_err:
         #print("Connection error, please check your internet connection or cdkeys.com status.")
         #print(f"scrape_title ConnectionError: {conn_err}")
@@ -64,16 +71,16 @@ def scrape_price(url):
         """Convert price from string with currency sign to float"""
         
         #start with empty string
-        price_float = ""
+        current_price = ""
         
         #first get string of just the value
         for char in price_str:
             if char.isdigit() or char == '.':
-                price_float += char
+                current_price += char
         
         #convert to float
-        price_float = float(price_float)
-        return price_float
+        current_price = float(current_price)
+        return current_price
     
     def is_unavailable(url):
         try:
@@ -88,40 +95,62 @@ def scrape_price(url):
                 return False
         except (AttributeError, IndexError):
             return False
-    
-    try:
-        page = requests.get(url)
 
-        soup = BS(page.content, 'html.parser')
+    #try/except blocks commented out til I figure out how to raise errors for cli and gui
+    page = requests.get(url)
+
+    soup = BS(page.content, 'html.parser')
+
+    #Check if available
+    unavailable = is_unavailable(url)
+
+    try:
+        #try to find price after discounts
+        price_str = soup.find(class_="final-price").get_text()
+    
+    except AttributeError:
+
+        #get original price if no discounted price found
+        price_str = soup.find(class_="price").get_text()
+    
+    #try:
+        #page = requests.get(url)
+
+        #soup = BS(page.content, 'html.parser')
 
         #Check if available
-        unavailable = is_unavailable(url)
+        #unavailable = is_unavailable(url)
 
-        try:
+        #try:
             #try to find price after discounts
-            price_str = soup.find(class_="final-price").get_text()
+            #price_str = soup.find(class_="final-price").get_text()
         
-        except AttributeError:
-            try:
-                #get original price if no discounted price found
-                price_str = soup.find(class_="price").get_text()
+        #except AttributeError:
 
-            except AttributeError:
-                    print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
-                    return None, None
+            #get original price if no discounted price found
+            #price_str = soup.find(class_="price").get_text()
+
+            #try/except blocks commented out til I figure out how to handle errors that works for gui and cli
+            #try:
+                #get original price if no discounted price found
+                #price_str = soup.find(class_="price").get_text()
+
+            #except AttributeError:
+                    #print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
+                    #return None, None
         
-    except AttributeError:
-        print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
-        return None, None
+    #except AttributeError:
+        #print("scrape_price AttributeError: Web page structure may have changed, please report this issue.")
+        #return None, None
     
-    except Exception as e:
-        print(f"An unexpected error occurred, please check your connection and the status of cdkeys.com")
-        print("If error persists, please report it.")
-        print(f"error: {e}")
+    #except Exception as e:
+        #print(f"An unexpected error occurred, please check your connection and the status of cdkeys.com")
+        #print("If error persists, please report it.")
+        #print(f"error: {e}")
         #go back to add game menu
         #Game.add_game() 
-        return None, None
+        #return None, None
 
 
-    price_float = price_to_float(price_str)
-    return price_float, unavailable
+    current_price = price_to_float(price_str)
+    return current_price, unavailable

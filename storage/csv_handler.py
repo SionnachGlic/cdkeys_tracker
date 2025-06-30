@@ -24,7 +24,7 @@ def save_to_csv(self, filename = "game_price_list.csv"):
             writer.writerow(['url', 'title', 'current_price', 'max_price'])
         
         #write attributes of current game instance in different columns
-        writer.writerow([self.url, self.title, self.price_float, self.max_price])
+        writer.writerow([self.url, self.title, self.current_price, self.max_price])
     
 def test_duplicate(url, filename="game_price_list.csv"):
     """Check if the game is already in the csv file"""
@@ -37,9 +37,30 @@ def test_duplicate(url, filename="game_price_list.csv"):
 
             for row in reader:
                 if row[header.index('url')] == url:
-                    max_price = float(row[header.index('max_price')])
-                    return True, max_price
+                    current_max_price = float(row[header.index('max_price')])
+                    return True, current_max_price
     return False, None
+
+def csv_update_max_price(url: str, updated_price: float, filename="game_price_list.csv"):
+     """Update the price of a game."""
+     #read csv to find row that has url
+     with open(filename, mode = 'r', newline = '', encoding = 'utf-8') as file:
+          reader = csv.reader(file)
+
+          #extracts first row and stores it in variable called header
+          header = next(reader)
+
+          #index url and max_price to compare and update respectively
+          url_index = header.index('url')
+          max_price_index = header.index('max_price')
+
+          for row in reader:
+               if row[url_index] == url:
+                    updated_game = row
+        
+     with open(filename, mode = 'w', newline = '', encoding = 'utf-8') as file:
+        row[max_price_index] == updated_price
+    
 
 def remove_from_csv(url, filename="game_price_list.csv"):
     """delete a game from the csv file based on its url"""
