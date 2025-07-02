@@ -3,7 +3,7 @@
 
 def cli_what_game() -> str:
     """Prompt the user for a game URL."""
-    print("Please copy/paste the entire URL of the game you want to track:")
+    print("Please copy/paste the entire URL of the game:")
     url = input(str("URL: "))
     return url
 

@@ -29,14 +29,19 @@ def save_to_csv(self, filename = "game_price_list.csv"):
 def test_duplicate(url, filename="game_price_list.csv"):
     """Check if the game is already in the csv file"""
     if not os.path.exists(filename):
-        return False, None
+        return False, None #if the file doesn't exist then no duplicates
     else:
         with open(filename, mode='r', newline='', encoding='utf-8') as file:
             reader = csv.reader(file)
-            header = next(reader)
+            try:
+                header = next(reader)
+                print
+            #if csv is empty, then theres no duplicate
+            except StopIteration:
+                return False, None
 
             for row in reader:
-                if row[header.index('url')] == url:
+                if row[header.index('url')].strip() == url.strip():
                     current_max_price = float(row[header.index('max_price')])
                     return True, current_max_price
     return False, None
@@ -46,20 +51,28 @@ def csv_update_max_price(url: str, updated_price: float, filename="game_price_li
      #read csv to find row that has url
      with open(filename, mode = 'r', newline = '', encoding = 'utf-8') as file:
           reader = csv.reader(file)
+          #store rows as list
+          rows = list(reader)
 
           #extracts first row and stores it in variable called header
-          header = next(reader)
+          #not gonna try/except StopIteration because this function is only called if at least 1 game exists
+          header = rows[0]
 
           #index url and max_price to compare and update respectively
           url_index = header.index('url')
           max_price_index = header.index('max_price')
 
-          for row in reader:
-               if row[url_index] == url:
-                    updated_game = row
-        
+          #find row with matching url and update max_price
+          for i in range(1, len(rows)):
+              if rows[i][url_index] == url:
+                  rows[i][max_price_index] = updated_price
+                  break
+
+     #write all rows back to csv file   
      with open(filename, mode = 'w', newline = '', encoding = 'utf-8') as file:
-        row[max_price_index] == updated_price
+         writer = csv.writer(file)
+         writer.writerow(header) #write header row
+         writer.writerows(rows[1:]) #write the rest of the rows
     
 
 def remove_from_csv(url, filename="game_price_list.csv"):
@@ -101,7 +114,6 @@ def remove_from_csv(url, filename="game_price_list.csv"):
     else:
 
         #write the rest of the rows back
-            #?? what happens to original file???? 
         with open(filename, mode = 'w', newline = '', encoding = 'utf-8') as file:
 
                             writer = csv.writer(file)
