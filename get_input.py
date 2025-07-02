@@ -15,7 +15,6 @@ import os
 #to save in spreadsheet
 import csv
 
-
 class Game:
     
     def __init__(self, url, title, price_float = None, max_price = None):
@@ -170,7 +169,7 @@ class Game:
     @classmethod
     def remove_game(cls, url, filename = "game_price_list.csv"):
         """Allows the user to enter the url of the game they'd like to remove"""
-        #NOT WORKING
+    
 
         #Initialise rows_to_keep as empty list
         rows_to_keep = []
@@ -202,13 +201,14 @@ class Game:
                     rows_to_keep.append(row) #Add game to list of games that aren't being removed
         
         if game_exists == False:
-            if user_input != 'q':
+            if url != 'q':
                 print("Game not found in your list, please check the URL and try again.")
             return
         
         else:
 
             #write the rest of the rows back
+            #?? what happens to original file???? 
             with open(filename, mode = 'w', newline = '', encoding = 'utf-8') as file:
 
                                 writer = csv.writer(file)
