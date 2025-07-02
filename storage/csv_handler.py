@@ -64,7 +64,7 @@ def csv_update_max_price(url: str, updated_price: float, filename="game_price_li
 
           #find row with matching url and update max_price
           for i in range(1, len(rows)):
-              if rows[i][url_index] == url:
+              if rows[i][url_index].strip() == url.strip():
                   rows[i][max_price_index] = updated_price
                   break
 
@@ -95,12 +95,12 @@ def remove_from_csv(url, filename="game_price_list.csv"):
         #creates index so removed game is recorded to inform user
         url_index = header.index('url')
         title_index = header.index('title')
+
+        game_exists = False #flag to check game is on csv
         
         for row in reader:
-            
-            game_exists = False #flag to check game is on csv
 
-            if row[url_index] == url:
+            if row[url_index].strip() == url.strip():
                 removed_game = row #Store removed game
                 game_exists = True #Set flag to true if game is found
                 
@@ -108,7 +108,7 @@ def remove_from_csv(url, filename="game_price_list.csv"):
                 rows_to_keep.append(row) #Add game to list of games that aren't being removed
     
     if game_exists == False:
-        #game not found
+        #game not found - need to do something here, will probably sort when doing GUI
         pass
     
     else:
