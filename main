@@ -1,0 +1,8 @@
+from nicegui import ui
+import pandas as pd
+from models.game import Game
+from scraper.scraper import scrape_title, scrape_price
+from storage.csv_handler import save_to_csv, test_duplicate, csv_update_max_price, remove_from_csv
+
+ui.label('Game Price Tracker')
+

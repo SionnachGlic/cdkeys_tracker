@@ -154,3 +154,17 @@ def scrape_price(url):
 
     current_price = price_to_float(price_str)
     return current_price, unavailable
+
+def scrape_picture(url): #need to add this to the csv file later
+    """Get the picture URL from the web page"""
+    page = requests.get(url)
+    soup = BS(page.content, 'html.parser')
+
+    # Get the image URL
+    image_tag = soup.find('img', id='galleryImage')
+    
+    if image_tag:
+        image_url = image_tag['src']
+        return image_url
+    else:
+        return None

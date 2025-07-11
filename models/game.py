@@ -9,3 +9,4 @@ class Game:
     title: str
     current_price: float
     max_price: float
+    img_url: str #add this to csv stuff
