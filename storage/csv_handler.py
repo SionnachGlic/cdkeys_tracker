@@ -21,10 +21,10 @@ def save_to_csv(self, filename = "game_price_list.csv"):
 
         #if file doesn't exist then make one with the headers
         if not file_exists:
-            writer.writerow(['url', 'title', 'current_price', 'max_price'])
+            writer.writerow(['url', 'title', 'current_price', 'max_price', 'img_url'])
         
         #write attributes of current game instance in different columns
-        writer.writerow([self.url, self.title, self.current_price, self.max_price])
+        writer.writerow([self.url, self.title, self.current_price, self.max_price, self.img_url])
     
 def test_duplicate(url, filename="game_price_list.csv"):
     """Check if the game is already in the csv file"""

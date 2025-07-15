@@ -1,8 +1,13 @@
+import all_pages
+import home_page
+from theme import frame
 from nicegui import ui
-import pandas as pd
-from models.game import Game
-from scraper.scraper import scrape_title, scrape_price
-from storage.csv_handler import save_to_csv, test_duplicate, csv_update_max_price, remove_from_csv
 
-ui.label('Game Price Tracker')
+@ui.page('/')
+def index_page():
+    with frame('Homepage'):
+        home_page.content()
 
+all_pages.create()
+
+ui.run(title='Game Price Tracker')
